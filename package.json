@@ -1,0 +1,21 @@
+{
+  "name": "medusa-file-pinata",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@medusajs/medusa": "^1.20.6",
+    "@medusajs/types": "^1.11.16",
+    "ajv": "^8.13.0",
+    "form-data": "^4.0.0",
+    "multer": "^1.4.5-lts.1",
+    "ramda": "^0.30.0"
+  }
+}
