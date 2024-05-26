@@ -33,25 +33,29 @@ const unpinFromIPFS =
   }
 
 class PinataFileService extends AbstractFileService {
-  //Available on this.config:
-  //pinata_api_key
-  //pinata_api_secret
-  //pinata_jwt
-  //pinata_gateway
-  //pinata_endpoint_upload
-  //pinata_endpoint_upload_protected
-  //pinata_endpoint_delete
+
+  constructor({},options){
+    super({},options)
+    this['pinata_api_key']    = options['pinata_api_key']
+    this['pinata_api_secret'] = options['pinata_api_secret']
+    this['pinata_jwt']        = options['pinata_jwt']
+    this['pinata_gateway']    = options['pinata_gateway']
+    //pinata_endpoint_upload
+    //pinata_endpoint_upload_protected
+    //pinata_endpoint_delete
+  }
+
 
   async upload(fileData) {
     return pipe
-    ( pinFileToIPFS(this.config)
-    , andThen( res => ({url: 'https://' + this.config['pinata_gateway'] + '/ipfs/' + res['IpfsHash'], key: res['IpfsHash']}))
+    ( pinFileToIPFS(this)
+    , andThen( res => ({url: 'https://' + this['pinata_gateway'] + '/ipfs/' + res['IpfsHash'], key: res['IpfsHash']}))
     ) (fileData)
   }
   async uploadProtected(fileData){
     return pipe
-    ( pinFileToIPFS(this.config)
-    , andThen( res => ({url: 'https://' + this.config['pinata_gateway'] + '/ipfs/' + res['IpfsHash'], key: res['IpfsHash']}))
+    ( pinFileToIPFS(this)
+    , andThen( res => ({url: 'https://' + this['pinata_gateway'] + '/ipfs/' + res['IpfsHash'], key: res['IpfsHash']}))
 //    , andThen( res => ({...res, url: 'https://' + this.config['pinata_gateway'] + '/ipfs/' + res['IpfsHash']}))
     ) (fileData)
   }
