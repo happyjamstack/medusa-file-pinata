@@ -1,49 +1,17 @@
 import { AbstractFileService } from "@medusajs/medusa"
-import { tap, pipe, toPairs, map } from 'ramda'
+import { andThen, tap, pipe, toPairs, map } from 'ramda'
 import FormData from 'form-data'
 import fs from 'fs'
 import axios from 'axios'
 
-
-/*
-const objToFormData =
-  (obj) => {
-    console.log(toPairs(obj))
-    const name = JSON.parse(obj['pinataMetadata']).name
-    const formData = new FormData()
-    map
-      ( p => formData.append
-        ( p[0]
-        , p[1]
-        , Buffer.isBuffer(p[1]) ? {filename: name || '' + Math.random()} : {}
-        )
-      )
-      ( toPairs(obj) )
-    return formData
-  }
-  */
-
 const pinFileToIPFS =
   (config) => async (fileData) => {
-    const upload_url = 'https://api.pinata.cloud/pinning/pinFileToIPFS'
-
-    /*
-    const obj =
-      { file: fileData.buffer
-      , pinataMetadata: JSON.stringify({ name: 'abc' })
-      , pinataOptions: JSON.stringify({ cidVersion: 1 })
-      }
-    const formData = objToFormData(obj)
-      */
-    
-
+    const urlUpload = 'https://api.pinata.cloud/pinning/pinFileToIPFS'
+    const filename = fileData['originalname'] || '' + Math.random()
     const formData = new FormData()
-
-    console.log(formData)
-
-    formData.append('pinataMetadata', JSON.stringify({name: fileData['originalname']}))
+    formData.append('pinataMetadata', JSON.stringify({name: filename}))
     formData.append('pinataOptions', JSON.stringify({cidVersion: 1}))
-    formData.append('file',fileData.buffer,{filename: fileData['originalname']})
+    formData.append('file',fileData.buffer,{filename: filename })
 
     const options =
       { maxContentLength: -1
@@ -52,30 +20,44 @@ const pinFileToIPFS =
         , Authorization: "Bearer " + config['pinata_jwt']
         }
       }
-    console.log(options)
-    const res = await axios.post(upload_url,formData,options)
-    console.log((res.data))
+    const res = await axios.post(urlUpload,formData,options)
+    return res.data
 
     }
+
+const unpinFromIPFS =
+  (config) => async(cid) => {
+    const urlDelete = `https://api.pinata.cloud/pinning/unpin/${cid}`
+    const res = await axios.delete(urlDelete,{headers: {Authorization: "Bearer " + config['pinata_jwt']}})
+    return res
+  }
 
 class PinataFileService extends AbstractFileService {
   //Available on this.config:
   //pinata_api_key
   //pinata_api_secret
   //pinata_jwt
-  //pinata_user_domain
+  //pinata_gateway
   //pinata_endpoint_upload
   //pinata_endpoint_upload_protected
   //pinata_endpoint_delete
 
   async upload(fileData) {
-    pinFileToIPFS(this.config)(fileData)
+    return pipe
+    ( pinFileToIPFS(this.config)
+    , andThen( res => ({...res, url: 'https://' + this.config['pinata_gateway'] + '/ipfs/' + res['IpfsHash']}))
+    ) (fileData)
   }
   async uploadProtected(fileData){
-    throw new Error("Method not implemented.")
+    return pipe
+    ( pinFileToIPFS(this.config)
+    , andThen( res => ({...res, url: 'https://' + this.config['pinata_gateway'] + '/ipfs/' + res['IpfsHash']}))
+    ) (fileData)
   }
-  async delete(fileData){
-    throw new Error("Method not implemented.")
+  async delete(cid){
+    const res = await unpinFromIPFS(this.config)(cid)
+    console.log(res)
+    return res
   }
   async getUploadStreamDescriptor(fileData){
     throw new Error("Method not implemented.")
