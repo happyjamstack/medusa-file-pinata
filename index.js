@@ -45,13 +45,14 @@ class PinataFileService extends AbstractFileService {
   async upload(fileData) {
     return pipe
     ( pinFileToIPFS(this.config)
-    , andThen( res => ({...res, url: 'https://' + this.config['pinata_gateway'] + '/ipfs/' + res['IpfsHash']}))
+    , andThen( res => ({url: 'https://' + this.config['pinata_gateway'] + '/ipfs/' + res['IpfsHash'], key: res['IpfsHash']}))
     ) (fileData)
   }
   async uploadProtected(fileData){
     return pipe
     ( pinFileToIPFS(this.config)
-    , andThen( res => ({...res, url: 'https://' + this.config['pinata_gateway'] + '/ipfs/' + res['IpfsHash']}))
+    , andThen( res => ({url: 'https://' + this.config['pinata_gateway'] + '/ipfs/' + res['IpfsHash'], key: res['IpfsHash']}))
+//    , andThen( res => ({...res, url: 'https://' + this.config['pinata_gateway'] + '/ipfs/' + res['IpfsHash']}))
     ) (fileData)
   }
   async delete(cid){
