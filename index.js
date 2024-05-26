@@ -60,13 +60,23 @@ class PinataFileService extends AbstractFileService {
     return res
   }
   async getUploadStreamDescriptor(fileData){
-    throw new Error("Method not implemented.")
+//    throw new Error("Method not implemented.")
+    const fname = 'getUploadStreamDescriptor'
+    console.log(fname + ' not implemented')
+    return {fname}
   }
   async getDownloadStream(fileData){
-    throw new Error("Method not implemented.")
+    const fname = 'getDownloadStream'
+    console.log(fname + ' not implemented')
+    return {fname}
+//    throw new Error("Method not implemented.")
   }
   async getPresignedDownloadUrl(fileData){
-    throw new Error("Method not implemented.")
+    const fname = 'getPresignedDownloadUrl'
+    console.log(fname + ' not implemented')
+    return {fname}
+//    throw new Error("Method not implemented.")
+    return {}
   }
 }
 
