@@ -89,4 +89,4 @@ PinataFileService['prototype']['delete'] =
     return res
   }
 
-export default PinataFileService
+module.exports = PinataFileService

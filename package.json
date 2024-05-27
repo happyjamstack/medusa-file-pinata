@@ -1,6 +1,6 @@
 {
   "name": "medusa-file-pinata",
-  "version": "0.0.105",
+  "version": "0.0.106",
   "description": "A plugin to store files in pinata.",
   "author": "",
   "type": "module",
