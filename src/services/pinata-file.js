@@ -1,8 +1,25 @@
-import { AbstractFileService } from "@medusajs/medusa"
-import { createReadStream } from 'fs'
-import {  Readable } from 'stream'
-import pinataSDK from '@pinata/sdk'
-import { andThen, tap, pipe, toPairs, map } from 'ramda'
+const { AbstractFileService } = require('@medusajs/medusa')
+const { createReadStream }  = require('fs')
+const { Readable } = require('stream')
+const pinataSDK = require('@pinata/sdk')
+const { Stream } = require('stream')
+const fs = require('fs')
+const { andThen, tap, pipe, toPairs, map } = require('ramda')
+
+const uploadFile =
+  (config) => async (fileData) => pipe
+      ( fileData => (
+        [ bufferToReadStream(fileData.buffer)
+        , { pinataMetadata: { name: fileData['originalname'] || '' + Math.random() }
+          , pinataOptions: {cidVersion: 1}
+          }
+        ])
+      , (pinataArgs) => config.pinata.pinFileToIPFS(...pinataArgs)
+      , andThen( (res) => (
+        { url: 'https://' + config['pinata_gateway'] + '/ipfs/' + res['IpfsHash']
+        , key: '' + res['IpfsHash']
+        }))
+      ) (fileData)
 
 const bufferToReadStream =
   (buffer) => {
@@ -15,78 +32,39 @@ const bufferToReadStream =
 
 class PinataFileService extends AbstractFileService {
 
-  constructor(container,config){
+  constructor(container,config) {
     super(container)
-    this['pinata'] = new pinataSDK( config['pinata_api_key'], config['pinata_api_secret'] )
-//    const authenticated = await pinata.testAuthentication()
-//    console.log(pinata)
-    this['pinata_api_key']    = config['pinata_api_key']
-    this['pinata_api_secret'] = config['pinata_api_secret']
-    this['pinata_jwt']        = config['pinata_jwt']
-    this['pinata_gateway']    = config['pinata_gateway']
+    this.config =
+      { pinata:            new pinataSDK( config['pinata_api_key'], config['pinata_api_secret'] )
+      , pinata_api_key:    config['pinata_api_key']
+      , pinata_api_secret: config['pinata_api_secret']
+      , pinata_jwt:        config['pinata_jwt']
+      , pinata_gateway:    config['pinata_gateway']
+      }
   }
 
-  /*
-  async upload(fileData) {
-    return pipe
-    ( pinFileToIPFS(this)
-    , andThen( res => ({url: 'https://' + this['pinata_gateway'] + '/ipfs/' + res['IpfsHash'], key: res['IpfsHash']}))
-    ) (fileData)
+  async upload(fileData){
+    return await uploadFile(this.config)(fileData)
   }
-  async uploadProtected(fileData){
-    return pipe
-    ( pinFileToIPFS(this)
-    , andThen( res => ({url: 'https://' + this['pinata_gateway'] + '/ipfs/' + res['IpfsHash'], key: res['IpfsHash']}))
-    ) (fileData)
+  async uploadProtected(fileData) {
+    return await uploadFile(this.config)(fileData)
   }
-  async delete(cid){
+  async delete(fileData){
     const res = await unpinFromIPFS(this.config)(cid)
-    console.log(res)
-    return res
+    return 
   }
-  */
-  async getUploadStreamDescriptor(fileData){
-    const fname = 'getUploadStreamDescriptor'
-    console.log(fname + ' not implemented')
-    return {fname}
+  async getUploadStreamDescriptor(uploadStreamDescriptor) {
+    const pass = new Stream.PassThrough()
+    const writeStream = fs.createWriteStream('./utnheon')
+    pass.pipe(writeStream)
+    return { writeStream: pass, promise: Promise.resolve(), url: '', fileKey: ''}
   }
-  async getDownloadStream(fileData){
-    const fname = 'getDownloadStream'
-    console.log(fname + ' not implemented')
-    return {fname}
+  async getDownloadStream(info) {
+    return bufferToReadStream(info)
   }
-  async getPresignedDownloadUrl(fileData){
-    const fname = 'getPresignedDownloadUrl'
-    console.log(fname + ' not implemented')
-    return {fname}
+  async getPresignedDownloadUrl(info) {
+    return ''
   }
 }
-
-PinataFileService['prototype']['upload'] =
-  async function (fileData) {
-    const pinata = this.pinata
-    return pipe
-      ( fileData => (
-        [ bufferToReadStream(fileData.buffer)
-        , { pinataMetadata: { name: fileData['originalname'] || '' + Math.random() }
-          , pinataOptions: {cidVersion: 1}
-          }
-        ])
-      , (pinataArgs) => pinata.pinFileToIPFS(...pinataArgs)
-      , andThen( (res) => (
-        { url: 'https://' + this['pinata_gateway'] + '/ipfs/' + res['IpfsHash']
-        , key: res['IpfsHash']
-        }))
-      ) (fileData)
-  } 
-
-PinataFileService['prototype']['uploadProtected'] = PinataFileService['prototype']['upload']
-
-PinataFileService['prototype']['delete'] =
-  (config) => async(cid) => {
-    const urlDelete = `https://api.pinata.cloud/pinning/unpin/${cid}`
-    const res = await axios.delete(urlDelete,{headers: {Authorization: "Bearer " + config['pinata_jwt']}})
-    return res
-  }
 
 module.exports = PinataFileService

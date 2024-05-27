@@ -1,9 +1,8 @@
 {
   "name": "medusa-file-pinata",
-  "version": "0.0.106",
+  "version": "0.0.1011",
   "description": "A plugin to store files in pinata.",
   "author": "",
-  "type": "module",
   "license": "",
   "keywords": [
     "storage",
@@ -40,6 +39,7 @@
     "@types/express": "^4.17.13",
     "@types/jest": "^27.4.0",
     "@types/node": "^17.0.8",
+    "@types/ramda": "^0.30.0",
     "cross-env": "^7.0.3",
     "eslint": "^6.8.0",
     "jest": "^27.3.1",

@@ -13,7 +13,7 @@
     "sourceMap": false,
     "outDir": "./dist",
     "rootDir": "./src",
-    "strict": true,
+    "strict": false,
     "baseUrl": ".",
     "jsx": "react-jsx",
     "forceConsistentCasingInFileNames": true,
