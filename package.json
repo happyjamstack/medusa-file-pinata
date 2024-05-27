@@ -1,6 +1,6 @@
 {
   "name": "medusa-file-pinata",
-  "version": "0.0.1014",
+  "version": "0.0.1015",
   "description": "A plugin to store files in pinata.",
   "author": "",
   "license": "",
@@ -18,9 +18,7 @@
     "url": "git+https://github.com/happyjamstack/medusa-file-pinata.git#main"
   },
   "scripts": {
-    "clean": "cross-env ./node_modules/.bin/rimraf dist",
-    "build": "cross-env npm run clean && tsc -p tsconfig.server.json",
-    "prepare": "cross-env NODE_ENV=production npm run build",
+    "clean": "cross-env cp -r ./src/services/pinata-file.js ./dist/services/pinata-file.js",
     "test": "cross-env jest"
   },
   "peerDependencies": {
