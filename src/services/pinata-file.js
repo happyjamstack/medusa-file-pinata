@@ -67,4 +67,4 @@ class PinataFileService extends AbstractFileService {
   }
 }
 
-module.exports = PinataFileService
+exports.default = PinataFileService
