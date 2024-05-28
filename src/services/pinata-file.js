@@ -53,17 +53,19 @@ class PinataFileService extends AbstractFileService {
     const res = await unpinFromIPFS(this.config)(cid)
     return 
   }
-  async getUploadStreamDescriptor(uploadStreamDescriptor) {
+  async getUploadStreamDescriptor(descriptor) {
+    const filePath = '/' + descriptor.name + descriptor.ext
     const pass = new Stream.PassThrough()
-    const writeStream = fs.createWriteStream('./utnheon')
+    const writeStream = fs.createWriteStream(filePath)
     pass.pipe(writeStream)
-    return { writeStream: pass, promise: Promise.resolve(), url: '', fileKey: ''}
+    return { writeStream: pass, promise: Promise.resolve(), url: this['config']['pinata_gateway'] + filePath, fileKey: filePath}
   }
   async getDownloadStream(info) {
     return bufferToReadStream(info)
   }
-  async getPresignedDownloadUrl(info) {
-    return ''
+  async getPresignedDownloadUrl(descriptor) {
+    
+    return this['config']['pinata_gateway'] + '/' + descriptor['fileKey']
   }
 }
 
