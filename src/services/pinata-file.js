@@ -9,7 +9,7 @@ const { andThen, tap, pipe, toPairs, map } = require('ramda')
 const uploadFile =
   (config) => async (fileData) => pipe
       ( fileData => (
-        [ bufferToReadStream(fileData.buffer)
+        [ fs.createReadStream(fileData['path'])//bufferToReadStream(fileData.buffer)
         , { pinataMetadata: { name: fileData['originalname'] || '' + Math.random() }
           , pinataOptions: {cidVersion: 1}
           }
@@ -50,7 +50,7 @@ class PinataFileService extends AbstractFileService {
     return await uploadFile(this.config)(fileData)
   }
   async delete(fileData){
-    const res = await unpinFromIPFS(this.config)(cid)
+    await this['config']['pinata'].unpin(fileData['fileKey'])
     return 
   }
   async getUploadStreamDescriptor(descriptor) {
@@ -60,8 +60,9 @@ class PinataFileService extends AbstractFileService {
     pass.pipe(writeStream)
     return { writeStream: pass, promise: Promise.resolve(), url: this['config']['pinata_gateway'] + filePath, fileKey: filePath}
   }
-  async getDownloadStream(info) {
-    return bufferToReadStream(info)
+  async getDownloadStream(descriptor) {
+    const filePath = this['config']['pinata_gateway'] + '/' + descriptor['fileKey'] 
+    return fs.createReadStream(filePath)
   }
   async getPresignedDownloadUrl(descriptor) {
     

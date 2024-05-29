@@ -12,6 +12,6 @@ const pinataOptions =
 //console.log(pinataOptions)
 const filePath = process.env['PINATA_FILE']
 const fileService = new (d.default)({}, pinataOptions)
-const res = fileService.upload({ buffer: fs.readFileSync(filePath), originalname: 'river123'})
+const res = fileService.upload({ buffer: fs.readFileSync(filePath), originalname: 'river123', path: 'aoeueanu'})
 console.log('test res')
 res.then(console.log)
